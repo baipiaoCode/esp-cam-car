@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>esp-cam-car</title>
+    <!-- 导入jQuery -->
+    <script src="/static/public_js/jquery.min.js"></script>
+    <!-- 导入Bootstrap 5 -->
+    <link href="/static/public_js/bootstrap.min.css" rel="stylesheet">
+    <script src="/static/public_js/bootstrap.min.js"></script>  
+    <style>
+        .container {
+            border: 1px solid #000;
+            text-align: center;
+            width: 100%;
+        }
+        .control {
+            text-align: center;
+            position: fixed;
+            bottom: 10px;
+            /* left: 20%; */
+            /* 子元素居中对齐 */
+            width: 100%;
+        }
+        .control button {
+            border: 1px solid #000;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 100px;
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="stream" src="http://192.168.31.211:81/stream" crossorigin="">
+    </div>
+
+    <div id="message">
+        <p>message</p>
+    </div>
+
+    <div class="control">
+        <button id="forward" class="" onclick="">前进</button>
+        <br>
+        <button id="left" class="">左转</button>
+        <button id="right" class="">右转</button>
+        <br>
+        <button id="backward" class="">后退</button>
+    </div>
+
+    <script>
+        /* control函数，通过传入的参数来判断要给esp32服务器发送什么请求 */
+        function control(dir) {
+            // 通过ajax发送get请求，将dir参数传入
+            $.ajax({
+                url: '',
+                success: function(data) {
+                    // 接收到服务器返回的数据后，将数据显示在页面上
+                    $('#message').html(data);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
