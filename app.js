@@ -21,6 +21,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'static', 'index.html'));
 })
 
+app.post('/', (req, res) => {
+    console.log(req.body);
+    res.send('ok');
+})
+
 
 /* 启动服务器 */
 app.listen(port, () => {

@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <!-- <meta name="viewport" content="width=device - width, initial - scale = 1.0, user - scalable = no"> -->
     <title>esp-cam-car</title>
     <!-- 导入jQuery -->
     <script src="/static/public_js/jquery.min.js"></script>
@@ -29,41 +30,111 @@
         }
         .control button {
             border: 1px solid #000;
-            border-radius: 5px;
+            border-radius: 10px;
             margin: 5px;
             font-size: 100px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
 
         }
+        /* 按钮点击伪类，点击按钮后按钮会缩小 */
+        .control button:active {
+            transform: scale(0.9);
+        }
+        .pSuccess{
+            background-color: aquamarine; 
+            margin-bottom: 1px; 
+            padding-left: 5px;
+            font-size: 30px;
 
+        }
+        .pError{
+            background-color: red;
+            margin-bottom: 1px;
+            padding-left: 5px;
+            font-size: 30px;
+        }
     </style>
 </head>
 <body>
+    <!-- 视频流 -->
     <div class="container">
-        <img id="stream" src="http://192.168.31.211:81/stream" crossorigin="">
+        <img id="stream" src="http://192.168.31.212:81/stream" crossorigin="">
     </div>
 
+    <!-- 提示信息 -->
     <div id="message">
         <p>运动提示</p>
     </div>
+    <!-- 按钮点击记录信息框 -->
+     <div id="messageList" style="position: absolute; right: 10px; padding: 10px; border: 1px solid black; height: 520px; width: 400px; overflow: hidden;">
+        <h3 style="text-align: center;">按钮点击记录</h3>
+     </div>
+     <script>
+            // 自动检查按钮点击记录信息框的子元素的数量，如果超过10个，则删除第2个子元素，因为第一个子元素是提示信息
+            function checkMessageList() {
+                var messageList = document.getElementById('messageList');
+                if (messageList.children.length > 11) {
+                    messageList.removeChild(messageList.children[1]);
+                }
+            }
+            // 每隔0.1秒检查一次按钮点击记录信息框的子元素的数量
+            setInterval(checkMessageList, 100);
+     </script>
 
+     <!-- 设置马达每次运动的步数 -->
+      <div style="font-size: 30px;">
+        <label for="step">马达每次运动的步数:</label>
+        <select name="step" id="step">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+      </div>
+
+    <!-- 控制按钮 -->
     <div class="control">
-        <button id="forward" class="" onclick="">前进</button>
+        <button id="forward" class="" onclick="control('前进', 'forward')">前进</button>
         <br>
-        <button id="left" class="">左转</button>
-        <button id="right" class="">右转</button>
+        <button id="left" class="" onclick="control('左转', 'left')">左转</button>
+        <button id="right" class="" onclick="control('右转', 'right')">右转</button>
         <br>
-        <button id="backward" class="">后退</button>
+        <button id="backward" class="" onclick="control('后退', 'backward')">后退</button>
     </div>
 
+
     <script>
+        // 使用函数记录当前点击次数
+        var count = 1;
+        // 记录上一次点击的按钮名称
+        Last_direction = '';
         /* control函数，通过传入的参数来判断要给esp32服务器发送什么请求 */
-        function control(dir) {
+        function control(direction, id) {
+            // 判断当前点击的按钮是否与上一次点击的按钮相同
+            if (direction == Last_direction) {
+                count++;
+            } else {
+                count = 1;
+                Last_direction = direction;
+            }
+            // 将提示信息显示在页面上
+                $('#message').html(`${direction} <sub>${count}</sub>`);
             // 通过ajax发送get请求，将dir参数传入
             $.ajax({
-                url: '',
+                url: '/',
+                type: 'post',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    dir: direction,
+                    step: $('#step').val()
+                }),
                 success: function(data) {
-                    // 接收到服务器返回的数据后，将数据显示在页面上
-                    $('#message').html(data);
+                    // 发送成功时，将发送成功的信息逐条添加到发送成功信息框中
+                    $('#messageList').append(`<p class="pSuccess"">发送成功: ${direction} <sub>${count}</sub></p>`);
+                },
+                error: function() {
+                    // 发送失败时，将发送失败的信息逐条添加到发送失败信息框中
+                    $('#messageList').append(`<p class="pError">发送失败: ${direction} <sub>${count}</sub></p>`);
                 }
             });
         }
